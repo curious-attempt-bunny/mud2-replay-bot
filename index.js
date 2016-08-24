@@ -16,6 +16,7 @@ var lastUser = null;
 controller.hears("(.*)",['direct_mention'],function(bot,message) {
   var cmd = message.match[1];
   // bot.reply(message,'I heared: '+cmd+' from '+message.channel);
+  console.log("Cmd: "+cmd);
   telnet.stdin.write(cmd+'\r');
   lastCommand = cmd;
   lastUser = message.user;
@@ -107,7 +108,11 @@ telnet.stdout.on('data', (data) => {
           || line.includes(' has just left.')
           || line.includes('Hovering before you is Eros, wearing a blindfold.')
           || line.includes('You now feel up to attacking other players, should you so desire.')
-          || line.includes('For your information:')) {
+          || line.includes('For your information:')
+          || line.includes('You are carrying the following:')
+          || line.includes('Auto-reset initiated')
+          || line.includes('Something magical is happening.')
+          || line == '') {
         // suppress
       } else if (line.includes('OK, ') && suppressEmote) {
         suppressEmote = false;
@@ -119,10 +124,10 @@ telnet.stdout.on('data', (data) => {
           showArrival = false;
         }
 
-        if (line.includes(' tells you "')) {
-          lastCommand = "re Hi! I am a bot that relays between the tearoom and the mud2.slack.com #teamroom channel. Mudmail Havoc with your email address for an invite."
-          telnet.stdin.write(lastCommand+'\r');
-        }
+        // if (line.includes(' tells you "')) {
+        //   lastCommand = "re Hi! I am a bot that relays between the tearoom and the mud2.slack.com #teamroom channel. Mudmail Havoc with your email address for an invite."
+        //   telnet.stdin.write(lastCommand+'\r');
+        // }
         if (line.includes('In the distance, you hear a bell toll.')) {
           telnet.stdin.write('obit\r');
           lastCommand = 'obit';
@@ -158,8 +163,18 @@ telnet.stdout.on('data', (data) => {
 
 telnet.stderr.on('data', (data) => {
   console.log(`stderr: ${data}`);
+  process.exit(1);
 });
 
 telnet.on('close', (code) => {
   console.log(`child process exited with code ${code}`);
 });
+
+// keep the connection alive
+var interval = setInterval(function() {
+  telnet.stdin.write('\r');
+}, 30000);
+
+setInterval(function() {
+  bot.rtm.ping();
+}, 5000);

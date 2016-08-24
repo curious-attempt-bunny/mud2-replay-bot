@@ -1,3 +1,3 @@
 # To run
 
-  SLACK_TOKEN=xxx PASSWORD=xxx node index.js
+  while true; do SLACK_TOKEN=xxx PASSWORD=xxx node index.js; done
