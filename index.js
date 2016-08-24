@@ -57,11 +57,11 @@ telnet.stdout.on('data', (data) => {
   }
 
 
-  if (!inPlay && buffer.includes('Account ID:')) {
+  if (!inPlay && buffer.includes('Account ID: ')) {
     telnet.stdin.write('Z00006459\r');
     buffer = '';
-  } else if (!inPlay && buffer.includes('Password:')) {
-    telnet.stdin.write(process.env.password+'\r');
+  } else if (!inPlay && buffer.includes('Password: ')) {
+    telnet.stdin.write(process.env.PASSWORD+'\r');
     buffer = '';
   } else if (!inPlay && buffer.includes('Checking your mail may take a while')) {
     telnet.stdin.write('n\r');
