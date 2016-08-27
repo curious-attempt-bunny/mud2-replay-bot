@@ -6,13 +6,17 @@ var bot = controller.spawn({
 bot.startRTM(function(err,bot,payload) {
   if (err) {
     console.log('Could not connect to Slack');
-    process.exit(1);
+    process.exit(0);
   }
 
   bot.rtm.on('close', function() {
     console.log('RTM close event');
-    process.exit(1);  
+    process.exit(0);  
   });
+
+  setInterval(function() {
+    bot.rtm.ping();
+  }, 5000);
 });
 
 var lastCommand = null;
@@ -173,7 +177,7 @@ telnet.stdout.on('data', (data) => {
 
 telnet.stderr.on('data', (data) => {
   console.log(`stderr: ${data}`);
-  process.exit(1);
+  process.exit(0);
 });
 
 telnet.on('close', (code) => {
@@ -184,7 +188,3 @@ telnet.on('close', (code) => {
 var interval = setInterval(function() {
   telnet.stdin.write('\r');
 }, 30000);
-
-setInterval(function() {
-  bot.rtm.ping();
-}, 5000);
