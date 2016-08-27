@@ -1,3 +1,3 @@
 # To run
 
-  while true; do SLACK_TOKEN=xxx PASSWORD=xxx node index.js; done
+  while true; do killall -9 telnet; SLACK_TOKEN=xxx PASSWORD=xxx node index.js; done

@@ -1,5 +1,3 @@
-process.exit('killall' ['-9', 'telnet'])
-
 var Botkit = require('botkit');
 var controller = Botkit.slackbot();
 var bot = controller.spawn({
@@ -10,10 +8,11 @@ bot.startRTM(function(err,bot,payload) {
     console.log('Could not connect to Slack');
     process.exit(1);
   }
-});
-bot.rtm.on('close', function() {
-  console.log('RTM close event');
-  process.exit(1);  
+
+  bot.rtm.on('close', function() {
+    console.log('RTM close event');
+    process.exit(1);  
+  });
 });
 
 var lastCommand = null;
