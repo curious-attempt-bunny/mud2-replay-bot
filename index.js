@@ -1,3 +1,5 @@
+process.exit('killall' ['-9', 'telnet'])
+
 var Botkit = require('botkit');
 var controller = Botkit.slackbot();
 var bot = controller.spawn({
@@ -5,8 +7,13 @@ var bot = controller.spawn({
 })
 bot.startRTM(function(err,bot,payload) {
   if (err) {
-    throw new Error('Could not connect to Slack');
+    console.log('Could not connect to Slack');
+    process.exit(1);
   }
+});
+bot.rtm.on('close', function() {
+  console.log('RTM close event');
+  process.exit(1);  
 });
 
 var lastCommand = null;
@@ -63,6 +70,9 @@ telnet.stdout.on('data', (data) => {
     buffer = '';
   } else if (!inPlay && buffer.includes('Password: ')) {
     telnet.stdin.write(process.env.PASSWORD+'\r');
+    buffer = '';
+  } else if (!inPlay && buffer.includes('Do you want to supersede this other session?')) {
+    telnet.stdin.write('y\r');
     buffer = '';
   } else if (!inPlay && buffer.includes('Checking your mail may take a while')) {
     telnet.stdin.write('n\r');
