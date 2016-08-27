@@ -56,8 +56,9 @@ telnet.stdout.on('data', (data) => {
     bot.say({
       attachments: [
       {
+        fallback: number+'.',
         color: 'good',
-        text: number+'.',
+        text: number+'.'
       }],
       channel: 'C23F11MB3' // not sure how you figure this out for yourself
     });
