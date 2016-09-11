@@ -1,3 +1,12 @@
+var inHours = function() {
+  var hour = new Date().getHours();
+  return hour >= 7 && hour < 22;
+};
+
+if (!inHours()) {
+  proces.exit(0);
+}
+
 var Botkit = require('botkit');
 var controller = Botkit.slackbot();
 var bot = controller.spawn({
@@ -23,9 +32,11 @@ var lastCommand = null;
 
 var lastUser = null;
 
-controller.hears("(.*)",['direct_mention'],function(bot,message) {
+controller.hears("(.*)",['ambient','direct_mention'],function(bot,message) {
   var cmd = message.match[1];
-  // bot.reply(message,'I heared: '+cmd+' from '+message.channel);
+  // if (process.env.SLACK_CHANNEL == null) {
+  //   bot.reply(message,'I heared: '+cmd+' from '+message.channel);
+  // }
   console.log("Cmd: "+cmd);
   telnet.stdin.write(cmd+'\r');
   lastCommand = cmd;
@@ -63,14 +74,14 @@ telnet.stdout.on('data', (data) => {
         color: 'good',
         text: number+'.'
       }],
-      channel: 'C23F11MB3' // not sure how you figure this out for yourself
+      channel: process.env.SLACK_CHANNEL
     });
     echoResetNumber = false;
   }
 
 
   if (!inPlay && buffer.includes('Account ID: ')) {
-    telnet.stdin.write('Z00006459\r');
+    telnet.stdin.write(process.env.ACCOUNT+'\r');
     buffer = '';
   } else if (!inPlay && buffer.includes('Password: ')) {
     telnet.stdin.write(process.env.PASSWORD+'\r');
@@ -91,7 +102,7 @@ telnet.stdout.on('data', (data) => {
     inPlay = false;
     echoResetNumber = true;
   } else if (!inPlay && buffer.includes('By what name shall I call you (Q to quit)?')) {
-    telnet.stdin.write('relay\r');
+    telnet.stdin.write(process.env.PERSONA+'\r');
     buffer = '';
     preInPlay = true;
   } else if (!inPlay && buffer.includes('What sex do you wish to be?')) {
@@ -119,10 +130,10 @@ telnet.stdout.on('data', (data) => {
         inPlay = true;
         showArrival = true;
       } else if (line.includes('You now feel up to attacking other players, should you so desire.')
-          || line.includes(' has just left.')
-          || line.includes('Hovering before you is Eros, wearing a blindfold.')
+          // || line.includes(' has just left.')
+          // || line.includes('Hovering before you is Eros, wearing a blindfold.')
           || line.includes('You now feel up to attacking other players, should you so desire.')
-          || line.includes('For your information:')
+          // || line.includes('For your information:')
           || line.includes('You are carrying the following:')
           || line.includes('Auto-reset initiated')
           || line.includes('Something magical is happening.')
@@ -132,11 +143,11 @@ telnet.stdout.on('data', (data) => {
         suppressEmote = false;
       } else {
         var echo = true;
-        if (line.includes(' has just arrived.')) {
-          echo = showArrival;
-          line += ' -- only the first arrival of a reset will be shown'
-          showArrival = false;
-        }
+        // if (line.includes(' has just arrived.')) {
+        //   echo = showArrival;
+        //   line += ' -- only the first arrival of a reset will be shown'
+        //   showArrival = false;
+        // }
 
         // if (line.includes(' tells you "')) {
         //   lastCommand = "re Hi! I am a bot that relays between the tearoom and the mud2.slack.com #teamroom channel. Mudmail Havoc with your email address for an invite."
@@ -147,32 +158,35 @@ telnet.stdout.on('data', (data) => {
           lastCommand = 'obit';
         }
 
-        if (line.includes('As you step through the opening') || line.includes(' in the place known as ')) {
-          lastCommand = 'qq';
-          telnet.stdin.write(lastCommand+'\r');
-          line = '@havoc it looks like someone may have just abused the system.'
-        }
+        // if (line.includes('As you step through the opening') || line.includes(' in the place known as ')) {
+        //   lastCommand = 'qq';
+        //   telnet.stdin.write(lastCommand+'\r');
+        //   line = '@havoc it looks like someone may have just abused the system.'
+        // }
 
         if (echo) {
           // console.log('Seen: '+line);
           bot.say({
             text: line,
-            channel: 'C23F11MB3' // not sure how you figure this out for yourself
+            channel: process.env.SLACK_CHANNEL
           });
         }
       }
 
-      if (line.includes(' has just arrived.')) {
-        if (Math.random() > 0.5) {
-          emotes = ['wave', 'bow', 'nod']
-          lastCommand = emotes[Math.floor(Math.random()*emotes.length)]
-          telnet.stdin.write(lastCommand+'\r');
-          suppressEmote = true;
-        }
-      }
+      // if (line.includes(' has just arrived.')) {
+      //   if (Math.random() > 0.5) {
+      //     emotes = ['wave', 'bow', 'nod']
+      //     lastCommand = emotes[Math.floor(Math.random()*emotes.length)]
+      //     telnet.stdin.write(lastCommand+'\r');
+      //     suppressEmote = true;
+      //   }
+      // }
     }
   }
 
+  if (!inHours()) {
+    proces.exit(0);
+  }
 });
 
 telnet.stderr.on('data', (data) => {
